@@ -9,6 +9,7 @@
                 type="text"
                 placeholder="Search..."
                 name=""
+                v-model="contact_search"
                 class="form-control search"
               />
               <div class="input-group-prepend">
@@ -19,8 +20,8 @@
             </div>
           </div>
           <div class="card-body contacts_body">
-            <ui class="contacts">
-              <li v-for="(contact,index) in contacts" :key="contact.id" :class="index==active_contact?'active':''" @click="changeContact(contact.id)" style="cursor: pointer;">
+            <ui class="contacts" v-if="contacts.length>0">
+              <li  v-for="(contact,index) in contacts" :key="contact.id" :class="index==active_contact?'active':''" @click="changeContact(contact.id)" style="cursor: pointer;">
                 <div class="d-flex bd-highlight">
                   <div class="img_cont">
                     <img
@@ -38,12 +39,17 @@
                 </div>
               </li>
             </ui>
+            <div v-else class="row justify-content-center" style="height:90%; width: 100%; align-items: center; ">
+                <h3 style="text-align: center; color: white;">
+                  No Contacts...
+                </h3>
+            </div>
           </div>
           <div class="card-footer"></div>
         </div>
       </div>
       <div class="col-md-8 col-xl-6 chat" style="height: 90%">
-        <div class="card" style="height: 100%">
+        <div class="card" style="height: 100%" v-if="contacts.length>0">
           <div class="card-header msg_head">
             <div class="d-flex bd-highlight">
               <div class="img_cont">
@@ -110,10 +116,12 @@
               </div>
               <textarea
                 name=""
+                
+                v-model="new_message"
                 class="form-control type_msg"
                 placeholder="Type your message..."
               ></textarea>
-              <div class="input-group-append">
+              <div class="input-group-append" @click="sendMessage">
                 <span class="input-group-text send_btn"
                   ><i class="fas fa-location-arrow"></i
                 ></span>
@@ -121,6 +129,11 @@
             </div>
           </div>
         </div>
+        <div v-else class="card row justify-content-center" style="height:100%; width: 100%; align-items: center; ">
+                <h3 style="text-align: center; color: white;">
+                  No Contacts...
+                </h3>
+            </div>
       </div>
     </div>
   </div>
@@ -137,7 +150,7 @@
           name:"MyName",
           image:myimage
         },
-        contacts:
+        allcontacts:
         [
           {
             id:1,
@@ -223,6 +236,9 @@
             messages:[]
           },
         ],
+        contacts:[],
+        contact_search:"",
+        new_message:""
       }
     },
     methods:{
@@ -232,9 +248,32 @@
           {
             this.active_contact = y
           }
-          
-        });
+        })
+      },
+      sendMessage(){
+        let messages = this.contacts[this.active_contact].messages
+        const date = new Date();
+        const id =messages.length>0? messages[messages.length-1].id+1:1;
+        const message = {
+              id: id,
+              user_id: 1,
+              text: this.new_message,
+              date: date.getHours()+":"+date.getMinutes(), 
+        }
+        
+        this.contacts[this.active_contact].messages.push(message)
+        this.new_message = ''
       }
+    },
+    watch:{
+      contact_search(new_val){
+        this.contacts = this.allcontacts.filter(function(x){
+          return x.name.toLowerCase().includes(new_val.toLowerCase())
+        })
+      }
+    },
+    mounted(){
+      this.contacts = this.allcontacts;
     }
   };
 </script>
